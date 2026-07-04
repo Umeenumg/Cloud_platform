@@ -2,48 +2,65 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasUuids;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
+        'company_id',
         'name',
+        'first_name',
         'email',
         'password',
+        'phone',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password',  // never returned in JSON responses
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'password' => 'hashed',  // auto-hash when you set password
+    ];
+
+    // belongs to one company
+    public function company()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Company::class);
+    }
+
+    // has many roles through pivot
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+    // has many subscriptions through associative class
+    public function subscriptions()
+    {
+        return $this->belongsToMany(Subscription::class, 'user_subscriptions')
+            ->withPivot('assigned_at', 'permission_level', 'status')
+            ->withTimestamps();
+    }
+
+    // has many api keys
+    public function apiKeys()
+    {
+        return $this->hasMany(ApiKey::class);
+    }
+
+    // has many access tokens
+    public function accessTokens()
+    {
+        return $this->hasMany(AccessToken::class);
+    }
+
+    // helper method — check if user has a role
+    public function hasRole(string $role): bool
+    {
+        return $this->roles->pluck('name')->contains($role);
     }
 }
