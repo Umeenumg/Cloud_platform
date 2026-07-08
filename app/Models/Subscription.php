@@ -31,4 +31,9 @@ class Subscription extends Model
             ->withPivot('assigned_at', 'permission_level', 'status')
             ->withTimestamps();
     }
+
+    public function resourceGroups()
+    {
+        return $this->hasMany(ResourceGroup::class);
+    }
 }
