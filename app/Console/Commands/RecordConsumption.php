@@ -21,7 +21,7 @@ class RecordConsumption extends Command
         $endDate   = now();
 
         foreach ($resources as $resource) {
-            $hours = $endDate->diffInMinutes($startDate) / 60;
+            $hours =$hours = 1;
             $cost  = round($resource->hourly_cost * $hours, 4);
 
             Consumption::create([
