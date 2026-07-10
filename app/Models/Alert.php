@@ -5,25 +5,41 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Metric extends Model
+class Alert extends Model
 {
     use HasUuids;
 
     protected $fillable = [
+        'user_id',
         'resource_id',
-        'recorded_at',
-        'cpu_usage',
-        'memory_usage',
-        'disk_usage',
-        'network_usage',
+        'name',
+        'metric',
+        'threshold',
+        'critical_level',
+        'active',
     ];
 
     protected $casts = [
-        'recorded_at' => 'datetime',
+        'active' => 'boolean',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function resource()
     {
         return $this->belongsTo(Resource::class);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(AlertEvent::class);
+    }
+
+    public function isTriggered(float $value): bool
+    {
+        return $value >= $this->threshold;
     }
 }
