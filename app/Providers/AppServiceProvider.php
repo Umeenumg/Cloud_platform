@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\Deployment;
 use App\Models\SecurityPolicy;
+use App\Models\Ticket;
 use App\Observers\AuditObserver;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,5 +21,6 @@ class AppServiceProvider extends ServiceProvider
         Resource::observe(AuditObserver::class);
         Deployment::observe(AuditObserver::class);
         SecurityPolicy::observe(AuditObserver::class);
+        Ticket::observe(AuditObserver::class);
     }
 }
