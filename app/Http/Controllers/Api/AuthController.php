@@ -99,4 +99,32 @@ class AuthController extends Controller
             $request->user()->load('roles', 'company', 'subscriptions')
         );
     }
+
+    // Web register — for Inertia
+    public function webRegister(Request $request)
+    {
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,email',
+            'password'   => 'required|string|min:8|confirmed',
+            'company_id' => 'required|uuid|exists:companies,id',
+            'role'       => 'required|in:Administrator,Developer,DevOpsEngineer,SecurityEngineer,BillingManager',
+        ]);
+
+        $user = \App\Models\User::create([
+            'name'       => $validated['name'],
+            'first_name' => $validated['first_name'],
+            'email'      => $validated['email'],
+            'password'   => $validated['password'],
+            'company_id' => $validated['company_id'],
+        ]);
+
+        $role = \App\Models\Role::where('name', $validated['role'])->first();
+        $user->roles()->attach($role->id);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        return redirect('/dashboard');
+    }
 }
